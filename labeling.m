@@ -50,35 +50,60 @@ for i = 1:NC
     index = c == 1;
     Table(i, index) = 1; % FOV table
     
-    min1 = min(savedAngles(1,:));
-    max1 = max(savedAngles(1,:));
-    min2 = min(savedAngles(2,:));
-    max2 = max(savedAngles(2,:));
-    
-%     c1 = c;
-    
-    if max2 > min1 && min2 < max1
-        if savedDistance(1,1) < savedDistance(2,1)
-            c1(1,2) = 1;
-        else c1(1,1) = 2;
+    for ii = 1:NO
+        if c(1,ii) == 1
+            for jj = ii+1:NO
+                if c(1,jj) == 1
+                    min1 = min(savedAngles(ii,:));
+                    max1 = max(savedAngles(ii,:));
+                    min2 = min(savedAngles(jj,:));
+                    max2 = max(savedAngles(jj,:));
+                    
+                    if max2 > min1 && min2 < max1
+                        if savedDistance(ii,1) < savedDistance(jj,1)
+                            c1(i,jj) = ii;
+                        else c1(i,ii) = jj;
+                        end
+                    end
+                    
+                    index1 = (c1 ~= 0);
+                    TableOcc(i, index1) = c1(i, index1);
+                end
+            end
         end
+        
+        
+        %
+        %     min1 = min(savedAngles(1,:));
+        %     max1 = max(savedAngles(1,:));
+        %     min2 = min(savedAngles(2,:));
+        %     max2 = max(savedAngles(2,:));
+        
+        %     c1 = c;
+        
+        %         if max2 > min1 && min2 < max1
+        %             if savedDistance(1,1) < savedDistance(2,1)
+        %                 c1(1,2) = 1;
+        %             else c1(1,1) = 2;
+        %             end
+        %         end
+        %
+        %         index1 = (c1 ~= 0);
+        %         TableOcc(i, index1) = c1(i, index1);
+        
+        %     index1 = find(c == 1);
+        %         if size(index1,2) >1
+        %         for k = 1 : size(index1,2)
+        %             objAngle = savedAngles(index1[k],:);
+        %             if max(objAngle) > pi
+        %             if max(objAngle) > pi/3
+        %
+        %         end
+        %     end
+        
+        
+        %     Table(i+NC,index1) = 1; % occlusion table
+        
     end
     
-    index1 = (c1 ~= 0);
-    TableOcc(i, index1) = c1(i, index1);
-
-%     index1 = find(c == 1);
-%         if size(index1,2) >1
-%         for k = 1 : size(index1,2)
-%             objAngle = savedAngles(index1[k],:);
-%             if max(objAngle) > pi
-%                 
-%         end
-%     end
-           
-                
-                %     Table(i+NC,index1) = 1; % occlusion table                
-                                
-            end
-            
-        end
+end
