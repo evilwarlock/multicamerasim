@@ -1,0 +1,84 @@
+function   [Table,TableOcc] = labeling(Cameras_Position, Objects_Position, ObjectSize)
+
+[~, NC] = size(Cameras_Position);
+[~, NO] = size(Objects_Position);
+
+a = zeros(1, NO);
+b = zeros(1, NO);
+Table = zeros(NC, NO);           % Row denotes Cam and Column denotes Obj
+TableOcc = zeros(NC,NO);
+
+c1 = zeros(1,2);
+savedAngles = zeros(NC, 4);
+savedDistance = zeros(NC,1);
+%% Determine if the Object j is in the FOV of Camera i;
+for i = 1:NC
+    a1 = Objects_Position(1, :) - ObjectSize/2;
+    a2 = Objects_Position(1, :) + ObjectSize/2;
+    b1 = Objects_Position(2, :) - ObjectSize/2;
+    b2 = Objects_Position(2, :) + ObjectSize/2;
+    
+    Points = [a1 a1 a2 a2; b1 b2 b1 b2];
+    Difference = Points - repmat(Cameras_Position(1:2, i), 1, 4*NO);       % difference is the vector pointing from camera to object vertices
+    
+    Difference1 = Difference(1, :);
+    
+    Difference1(Difference1 > 0) = 0;
+    Difference1(Difference1 < 0) = 1;
+    
+    D = Difference1;
+    
+    Angles = mod(atan(Difference(2,:)./Difference(1,:)) + pi*D, 2*pi);
+    
+    for j = 1:NO
+        Angle = [Angles(j), Angles(j + NO), Angles(j + 2*NO), Angles(j + 3*NO)];
+        %         if (Camera_Position(3, i) < pi/3)
+        Angle1 = mod((Angle - mod((Cameras_Position(3, i) - Cameras_Position(4, i)/2), 2*pi)), 2*pi);
+        a(j) = ~isempty(find((Angle1 >= 0) & (Angle1 <= Cameras_Position(4, i)), 1));
+        %         a(j) = ~isempty(find((Angle > (Cameras_Position(3, i) - Cameras_Position(4, i)/2)) & ...,
+        %                          (Angle < (Cameras_Position(3, i) + Cameras_Position(4, i)/2)), 1));
+        b(j) = boolean(norm(Objects_Position(:,j) - Cameras_Position(1:2, i)) < Cameras_Position(5, i));
+        
+        %% occlusion table
+        savedAngles(j,:) = Angle1;
+        savedDistance(j,:)=norm(Objects_Position(:,j) - Cameras_Position(1:2, i));
+        
+    end
+    
+    %% output
+    c = a.*b;
+    index = c == 1;
+    Table(i, index) = 1; % FOV table
+    
+    min1 = min(savedAngles(1,:));
+    max1 = max(savedAngles(1,:));
+    min2 = min(savedAngles(2,:));
+    max2 = max(savedAngles(2,:));
+    
+%     c1 = c;
+    
+    if max2 > min1 && min2 < max1
+        if savedDistance(1,1) < savedDistance(2,1)
+            c1(1,2) = 1;
+        else c1(1,1) = 2;
+        end
+    end
+    
+    index1 = c1 ==1;
+    TableOcc(i, index1) = 1;
+
+%     index1 = find(c == 1);
+%         if size(index1,2) >1
+%         for k = 1 : size(index1,2)
+%             objAngle = savedAngles(index1[k],:);
+%             if max(objAngle) > pi
+%                 
+%         end
+%     end
+           
+                
+                %     Table(i+NC,index1) = 1; % occlusion table                
+                                
+            end
+            
+        end
