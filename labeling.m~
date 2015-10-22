@@ -10,6 +10,8 @@ TableOcc = zeros(NC,NO);
 
 c1 = zeros(1,2);
 savedAngles = zeros(NC, 4);
+correctedAngles = zeros(NC, 4);  % angles larger than pi/3 should be seen as pi/3, angles larger than pi, should be set to zero
+
 savedDistance = zeros(NC,1);
 %% Determine if the Object j is in the FOV of Camera i;
 for i = 1:NC
@@ -41,13 +43,21 @@ for i = 1:NC
         
         %% occlusion table
         savedAngles(j,:) = Angle1;
+        correctedAngles(j,:) = Angle1;
         savedDistance(j,:)=norm(Objects_Position(:,j) - Cameras_Position(1:2, i));
+        
+        for jj = 1:4
+            if correctedAngles(j,jj)
         
     end
     
     %% output
     c = a.*b;
     index = c == 1;
+
+    
+    
+    
     Table(i, index) = 1; % FOV table
     
     for ii = 1:NO
